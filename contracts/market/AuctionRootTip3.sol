@@ -125,4 +125,16 @@ contract AuctionRootTip3 is OffersRoot {
 
         offerAddress = address(tvm.hash(data));
     }
+
+    function buildAuctionCreationPayload (
+        address _paymentTokenRoot,
+        address _addrRoot,
+        uint128 _price,
+        bytes _hash,
+        uint128 _auctionDuration
+    ) external pure responsible returns(TvmCell) {
+        TvmBuilder builder;
+        builder.store(_paymentTokenRoot, _addrRoot, _price, _hash, _auctionDuration);
+        return builder.toCell();
+    }
 }

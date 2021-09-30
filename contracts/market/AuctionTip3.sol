@@ -281,4 +281,10 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             }
         }
     }
+
+    function buildPlaceBidPayload(uint32 callbackId) external pure responsible returns (TvmCell) {
+        TvmBuilder builder;
+        builder.store(callbackId);
+        return builder.toCell();
+    }
 }
