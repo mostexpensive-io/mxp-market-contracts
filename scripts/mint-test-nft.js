@@ -11,6 +11,9 @@ async function main() {
   const nftId = await account.runTarget({
     contract: nftRoot,
     method: 'mintNft',
+    params: {
+      dataUrl: Buffer.from('TODO').toString('hex') // TODO: get url from argv
+    },
     keyPair: keyPairs[0]
   })
 

@@ -3,7 +3,7 @@ const stringToBytesArray = (dataString) => {
 };
 
 async function deployAccount() {
-  const Account = await locklift.factory.getAccount('Wallet', 'scripts/local/account_build');
+  const Account = await locklift.factory.getAccount('Wallet', 'scripts/account_build');
   const keyPairs = await locklift.keys.getKeyPairs();
   const account = await locklift.giver.deployContract({
     contract: Account,
@@ -61,6 +61,9 @@ async function mintNft(account, root) {
   const nftTx = await account.runTarget({
     contract: root,
     method: 'mintNft',
+    params: {
+      dataUrl: Buffer.from('test purposes').toString('hex')
+    },
     keyPair: keyPairs[0]
   })
 
