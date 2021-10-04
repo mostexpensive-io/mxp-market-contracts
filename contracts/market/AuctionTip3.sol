@@ -22,6 +22,15 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     uint public auctionEndTime;
     uint8 public bidDelta;
 
+    struct AuctionDetails {
+        address auctionSubject;
+        address subjectOwner;
+        address paymentTokenRoot;
+        address walletForBids;
+        uint duration;
+        uint finishTime;
+    }
+
     struct Bid {
         address addr;
         uint128 value;
@@ -276,5 +285,9 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         TvmBuilder builder;
         builder.store(callbackId);
         return builder.toCell();
+    }
+
+    function getInfo() external view responsible returns (AuctionDetails) {
+        return AuctionDetails(addrData, addrOwner, paymentTokenRoot, tokenWallet, auctionDuration, auctionEndTime);
     }
 }

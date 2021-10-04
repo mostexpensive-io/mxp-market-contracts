@@ -150,6 +150,15 @@ describe('success auction e2e', async function() {
       }
     })
     expect(bidPayloadForTest).to.be.a('string')
+    const auctionInfo = await auction.call({
+      method: 'getInfo'
+    })
+    expect(auctionInfo.auctionSubject).to.equal(nft.address);
+    expect(auctionInfo.subjectOwner).to.equal(account.address)
+    expect(auctionInfo.paymentTokenRoot).to.equal(tokenRoot.address)
+    expect(auctionInfo.walletForBids).to.not.equal(ZERO_ADDRESS)
+    expect(auctionInfo.duration.toNumber()).to.equal(30)
+    expect(auctionInfo.finishTime.toNumber()).to.not.equal(0)
   })
 
   it('make a bid', async function() {
