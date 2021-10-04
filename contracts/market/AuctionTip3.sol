@@ -139,7 +139,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                     false,
                     empty
                 );
-                sendBidResultCallback(sender_wallet, payload, false);
+                sendBidResultCallback(sender_address, payload, false);
                 finishAuction();
             } else {
                 // TODO: sender can spend contract's tons by sending very small value
@@ -147,7 +147,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             }
         } else {
             emit bidDeclined(sender_address, amount);
-            sendBidResultCallback(sender_wallet, payload, false);
+            sendBidResultCallback(sender_address, payload, false);
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
                 0,
