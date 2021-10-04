@@ -1,7 +1,22 @@
 const {Migration} = require(process.cwd()+'/scripts/utils');
+const { Command } = require('commander');
+const program = new Command();
+
 const migration = new Migration();
 
+program
+  .allowUnknownOption()
+  .option('-dU, --dataUrl <url>', 'URL with some data, representing new NFT token')
+program.parse(process.argv);
+const options = program.opts();
+
 async function main() {
+  if (!options.dataUrl) {
+    console.log();
+    console.log('Your forgot about dataUrl parameter for your NFT! Pass it as a last parameter of launching this script!');
+    console.log('EX: locklift run --config locklift.config.js --network local --script scripts/mint-test-nft.js -dU https://someurl.com/nft-1.json');
+    return;
+  }
   const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
   const nftRoot = migration.load(await locklift.factory.getContract('NftRoot'), 'NftRoot', locklift.network);
   const keyPairs = await locklift.keys.getKeyPairs();
