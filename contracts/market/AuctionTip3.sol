@@ -274,9 +274,9 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 callbackId = _payload.toSlice().decode(uint32);
             }
             if (_isBidPlaced) {
-                IAuctionBidPlacedCallback(_callbackTarget).bidPlacedCallback{value: 1, flag: 1}(callbackId);
+                IAuctionBidPlacedCallback(_callbackTarget).bidPlacedCallback{value: 1, flag: 1, bounce: false}(callbackId);
             } else {
-                IAuctionBidPlacedCallback(_callbackTarget).bidNotPlacedCallback{value: 2, flag: 1}(callbackId);
+                IAuctionBidPlacedCallback(_callbackTarget).bidNotPlacedCallback{value: 2, flag: 1, bounce: false}(callbackId);
             }
         }
     }
