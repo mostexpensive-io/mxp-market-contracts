@@ -76,7 +76,45 @@ class Migration {
   }
 }
 
+// framework doesn't had deploy function without a giver runs...whatever...just copy-paste it and remove giver logic
+async function deployContract({
+    contract,
+    constructorParams,
+    initParams,
+    keyPair
+}) {
+  const extendedInitParams = initParams === undefined ? {} : initParams;
+  if (contract.autoRandomNonce) {
+    if (contract.abi.data.find(e => e.name === '_randomNonce')) {
+      extendedInitParams._randomNonce = extendedInitParams._randomNonce === undefined
+        ? locklift.utils.getRandomNonce()
+        : extendedInitParams._randomNonce;
+    }
+  }
+
+  const {
+    address,
+  } = await locklift.ton.createDeployMessage({
+    contract,
+    constructorParams,
+    initParams: extendedInitParams,
+    keyPair,
+  });
+
+  // Send deploy transaction
+  const message = await locklift.ton.createDeployMessage({
+    contract,
+    constructorParams,
+    initParams: extendedInitParams,
+    keyPair,
+  });
+  await locklift.ton.waitForRunTransaction({ message, abi: contract.abi });
+  contract.setAddress(address);
+  return contract;
+}
+
 
 module.exports = {
-  Migration
+  Migration,
+  deployContract
 }
