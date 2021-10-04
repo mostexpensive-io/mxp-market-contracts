@@ -16,8 +16,8 @@ import './errors/AuctionErrors.sol';
 import './errors/BaseErrors.sol';
 
 contract AuctionTip3 is Offer, ITokensReceivedCallback {
-    address paymentTokenRoot;
-    address tokenWallet;
+    address public paymentTokenRoot;
+    address public tokenWallet;
     uint public auctionDuration;
     uint public auctionEndTime;
     uint8 public bidDelta;
@@ -55,7 +55,6 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         address sendGasTo
     ) public {
         tvm.accept();
-        tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         setDefaultProperties(
             _markerRootAddr, 
             _tokenRootAddr, 
@@ -121,7 +120,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             if(now >= auctionEndTime) {
                 emit bidDeclined(sender_address, amount);
                 TvmCell empty;
-                ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
+                ITONTokenWallet(msg.sender).transferToRecipient{ value: Gas.TRANSFER_TO_RECIPIENT_VALUE, flag: 1 }(
                     0,
                     sender_address,
                     amount,
@@ -139,6 +138,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             }
         } else {
             emit bidDeclined(sender_address, amount);
+            sendBidResultCallback(sender_wallet, payload, false);
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
                 0,
@@ -149,8 +149,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 original_gas_to,
                 false,
                 empty
-            );
-            sendBidResultCallback(sender_wallet, payload, false);
+            );   
         }
     }
 
@@ -179,6 +178,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             }
         } else {
             emit bidDeclined(_newBidSender, _bid);
+            sendBidResultCallback(_newBidSender, _callbackPayload, false);
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
                 0,
@@ -190,22 +190,18 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 false,
                 empty
             );
-            sendBidResultCallback(_newBidSender, _callbackPayload, false);
         }
     }
 
     function finishAuction() public {
         require(now >= auctionEndTime, AuctionErrors.auction_still_in_progress);
-        tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         tvm.accept();
         uint128 feePart = math.divr(deploymentFee, 3);
 
         if (maxBidValue > price) {
             uint128 decimals = uint128(uint128(10) ** uint128(marketFeeDecimals));
             uint128 marketFeeValue = math.divc(math.muldiv(maxBidValue, uint128(marketFee), uint128(100)), decimals);
-            IData(addrData).transferOwnership{value: 0, flag: 128}(currentBid.addr);
-            // Send crystals to seller's money reciever wallet
-            // MY: Here tip3 tranfers too
+            IData(addrData).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(currentBid.addr);
             TvmCell empty;
             ITONTokenWallet(tokenWallet).transferToRecipient{ value: 0, flag: 128 }(
                 0,
@@ -217,16 +213,10 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 false,
                 empty
             );
-            // TODO: events
-            // ISellContractDeployer(deployerAddress).auctionFinished{value: feePart}(currentBid.tokenWalletAddress, maxBidValue);
             state = AuctionStatus.Complete;
         } else {
-            IData(addrData).transferOwnership{value: 0, flag: 128}(addrOwner);
-            // TODO: events
-            // ISellContractDeployer(deployerAddress).auctionExpired{value: feePart}();
-            // selfdestruct(addrOwner);
-            // MY: selfdestruct?
             state = AuctionStatus.Complete;
+            IData(addrData).transferOwnership{value: 0, flag: 128}(addrOwner);
         }
     }
 

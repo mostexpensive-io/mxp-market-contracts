@@ -75,9 +75,8 @@ contract AuctionRootTip3 is OffersRoot {
         ) {
             address offerAddress = new AuctionTip3 {
                 wid: address(this).wid,
-                // TODO: calculate value
-                value: math.max(0.3 ton, deploymentFeePart * 3),
-                flag: 128,
+                value: Gas.DEPLOY_AUCTION_VALUE,
+                flag: 1,
                 code: offerCode,
                 varInit: {
                     price: _price,
@@ -96,9 +95,9 @@ contract AuctionRootTip3 is OffersRoot {
                 _paymentTokenRoot,
                 msg.sender
             );
-            IData(data_address).transferOwnership{value: 0, flag: 128}(offerAddress);
             MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, data_address, offerAddress, _price, _auctionDuration, _hash);    
             emit auctionDeployed(offerAddress, offerInfo);
+            IData(data_address).transferOwnership{value: 0, flag: 128}(offerAddress);
         } else {
             IData(data_address).transferOwnership{value: 0, flag: 128}(sender_address);
         }
