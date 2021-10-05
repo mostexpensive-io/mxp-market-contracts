@@ -253,6 +253,14 @@ describe('success auction e2e', async function() {
 
   it('finish auction (case will loop-wait for ending)', async function() {
     const keyPairs = await locklift.keys.getKeyPairs();
+    const sellerBalanceBefore = await wallet1.call({
+      method: 'balance',
+      params: {}
+    })
+    const bid = await auction.call({
+      method: 'currentBid',
+      params: {}
+    })
     let auctionEndTime = await auction.call({
       method: 'auctionEndTime'
     })
@@ -268,6 +276,11 @@ describe('success auction e2e', async function() {
     const nftInfo = await nft.call({
       method: 'getInfo'
     })
+    const sellerBalanceAfter = await wallet1.call({
+      method: 'balance',
+      params: {}
+    })
+    expect(sellerBalanceAfter.toNumber() - sellerBalanceBefore.toNumber()).to.equal(bid.value.toNumber())
     expect(nftInfo.addrOwner).to.equal(account2.address)
   })
 
