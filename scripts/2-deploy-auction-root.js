@@ -26,7 +26,7 @@ async function main() {
       keyPair: keyPairs[0],
     });
   } else {
-    auctionRootTip3 = deployContract({
+    auctionRootTip3 = await deployContract({
       contract: AuctionRootTip3,
       constructorParams: {
         codeIndex: Index.code,
