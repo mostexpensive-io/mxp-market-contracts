@@ -93,13 +93,15 @@ contract AuctionRootTip3 is OffersRoot {
                 _auctionDuration,
                 auctionBidDelta,
                 _paymentTokenRoot,
-                msg.sender
+                sender_address
             );
             MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, data_address, offerAddress, _price, _auctionDuration, _hash);    
             emit auctionDeployed(offerAddress, offerInfo);
-            IData(data_address).transferOwnership{value: 0, flag: 128}(offerAddress);
+            IData(data_address).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(offerAddress);
+            sender_address.transfer({ value: 0, flag: 128, bounce: false });
         } else {
-            IData(data_address).transferOwnership{value: 0, flag: 128}(sender_address);
+            IData(data_address).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(sender_address);
+            sender_address.transfer({ value: 0, flag: 128, bounce: false });
         }
     }
 

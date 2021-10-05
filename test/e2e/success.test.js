@@ -61,7 +61,6 @@ describe('success auction e2e', async function() {
     tokenRoot = await deployTokenRoot(account.address)
     nftRoot = await deployNftRoot(account.address)
     nft = await mintNft(account, nftRoot)
-
     wallet1 = await deployTonTokenWallet(account, tokenRoot, account.address);
     wallet2 = await deployTonTokenWallet(account, tokenRoot, account2.address);
 
@@ -99,7 +98,7 @@ describe('success auction e2e', async function() {
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(10, 'nano'));
+    }, locklift.utils.convertCrystal(2, 'nano'));
     expect(auctionRootTip3.address).to.be.a('string')
       .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
   });
@@ -125,9 +124,8 @@ describe('success auction e2e', async function() {
         payload: auctionPlacePayload
       },
       keyPair: keyPairs[0],
-      value: locklift.utils.convertCrystal(10, 'nano'),
+      value: locklift.utils.convertCrystal(5.1, 'nano'),
     })
-
   })
 
   it('checking auction', async function() {

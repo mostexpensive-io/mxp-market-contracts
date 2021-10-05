@@ -13,6 +13,6 @@ library Gas {
     uint128 constant GET_TOKEN_WALLET_DETAILS       = 0.5 ton;
     uint128 constant TRANSFER_TO_RECIPIENT_VALUE    = 0.2 ton;
 
-
+    // true nft
     uint128 constant TRANSFER_OWNERSHIP_VALUE       = 1 ton;
 }

@@ -100,7 +100,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             address(this)                   // owner_address_
         );
 
-        sendGasTo.transfer({ value: 0, flag: 128 });
+        sendGasTo.transfer({ value: 0, flag: 128, bounce: false });
     }
 
     function tokensReceivedCallback(
@@ -225,7 +225,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             state = AuctionStatus.Complete;
         } else {
             state = AuctionStatus.Complete;
-            IData(addrData).transferOwnership{value: 0, flag: 128}(addrOwner);
+            IData(addrData).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(addrOwner);
         }
     }
 
