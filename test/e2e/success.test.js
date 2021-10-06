@@ -212,9 +212,9 @@ describe('success auction e2e', async function() {
         callbackId: 1
       }
     })
-    const nextBidValue = await auction.call({
+    const nextBidValue = (await auction.call({
       method: 'nextBidValue'
-    })
+    })).toNumber() + 1 //amount > nextBidValue
     // old data
     const firstBidderBalanceBefore = await wallet1.call({
       method: 'balance',
@@ -226,7 +226,7 @@ describe('success auction e2e', async function() {
       method: 'transfer',
       params: {
         to: auctionTokenWalletAddress,
-        tokens: nextBidValue.toNumber(),
+        tokens: nextBidValue,
         grams: locklift.utils.convertCrystal(1, 'nano'),
         send_gas_to: account2.address,
         notify_receiver: true,
@@ -246,7 +246,7 @@ describe('success auction e2e', async function() {
       params: {}
     })
     expect(bidAfter.addr).to.equal(account2.address)
-    expect(bidAfter.value.toNumber()).to.equal(nextBidValue.toNumber())
+    expect(bidAfter.value.toNumber()).to.equal(nextBidValue)
   })
 
   it('finish auction (case will loop-wait for ending)', async function() {

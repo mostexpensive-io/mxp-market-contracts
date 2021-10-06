@@ -116,7 +116,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     ) override external {
         tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         if (
-            msg.value > nextBidValue && //require(msg.value > nextBidValue, AuctionErrors.bid_is_too_low);
+            amount > nextBidValue && // require(msg.value > nextBidValue, AuctionErrors.bid_is_too_low);
             msg.sender == tokenWallet && // значение переменной контракта из п.2
             msg.sender == token_wallet && // параметр из tokensReceiveCallback
             tokenWallet.value != 0 &&
@@ -163,7 +163,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     }
 
     function processBid(address _newBidSender, uint128 _bid, TvmCell _callbackPayload) private {
-        if (_bid >= nextBidValue) {  
+        if (_bid >= nextBidValue) {  // TODO: for what? for why? we checked it already
             Bid _currentBid = currentBid;
             Bid newBid = Bid(_newBidSender, _bid);
             maxBidValue = _bid; // MY: there was msg.value, but for why?
