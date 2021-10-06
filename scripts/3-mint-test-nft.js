@@ -17,7 +17,7 @@ async function main() {
     console.log('EX: locklift run --config locklift.config.js --network local --script scripts/mint-test-nft.js -dU https://someurl.com/nft-1.json');
     return;
   }
-  const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
+  const account = migration.load(await locklift.factory.getAccount('SafeMultisigWallet', 'scripts/account_build'), 'Account', locklift.network);
   const nftRoot = migration.load(await locklift.factory.getContract('NftRoot'), 'NftRoot', locklift.network);
   const keyPairs = await locklift.keys.getKeyPairs();
 
@@ -27,9 +27,10 @@ async function main() {
     contract: nftRoot,
     method: 'mintNft',
     params: {
-      dataUrl: Buffer.from('TODO').toString('hex') // TODO: get url from argv
+      dataUrl: Buffer.from(options.dataUrl).toString('hex')
     },
-    keyPair: keyPairs[0]
+    keyPair: keyPairs[0],
+    value: locklift.utils.convertCrystal(1.1, 'nano'),
   })
 
   const tree = await locklift.ton.client.net.query_transaction_tree({

@@ -1,5 +1,8 @@
 const fs = require('fs');
 
+const stringToBytesArray = (dataString) => {
+  return Buffer.from(dataString).toString('hex')
+};
 class Migration {
   constructor(log_path = 'migration-log.json') {
     this.log_path = log_path;
@@ -116,5 +119,6 @@ async function deployContract({
 
 module.exports = {
   Migration,
-  deployContract
+  deployContract,
+  stringToBytesArray
 }
