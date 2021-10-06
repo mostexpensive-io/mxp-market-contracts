@@ -98,7 +98,7 @@ describe('success auction e2e', async function() {
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(2, 'nano'));
+    }, locklift.utils.convertCrystal(1, 'nano'));
     expect(auctionRootTip3.address).to.be.a('string')
       .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
   });
@@ -124,7 +124,7 @@ describe('success auction e2e', async function() {
         payload: auctionPlacePayload
       },
       keyPair: keyPairs[0],
-      value: locklift.utils.convertCrystal(5.1, 'nano'),
+      value: locklift.utils.convertCrystal(5.3, 'nano'),
     })
   })
 
