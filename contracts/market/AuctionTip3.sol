@@ -48,8 +48,8 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     }
     AuctionStatus state;
 
-    event bidPlaced(address buyerAddress, uint128 value);
-    event bidDeclined(address buyerAddress, uint128 value);
+    event BidPlaced(address buyerAddress, uint128 value);
+    event BidDeclined(address buyerAddress, uint128 value);
 
     // TODO: pass bidDelta decimals?
     constructor(
@@ -128,7 +128,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         ) {
             processBid(sender_address, amount, payload);
         } else {
-            emit bidDeclined(sender_address, amount);
+            emit BidDeclined(sender_address, amount);
             sendBidResultCallback(sender_address, payload, false);
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
@@ -150,7 +150,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         maxBidValue = _bid;
         currentBid = newBid;
         calculateAndSetNextBid();
-        emit bidPlaced(_newBidSender, _bid);
+        emit BidPlaced(_newBidSender, _bid);
         sendBidResultCallback(_newBidSender, _callbackPayload, true);
         // Return lowest bid value to the bidder's address
         // TODO Who pays? Now _newBidSender is send_gas_to for transferToRecipient
