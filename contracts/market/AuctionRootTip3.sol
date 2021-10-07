@@ -4,6 +4,7 @@ pragma AbiHeader pubkey;
 pragma AbiHeader time;
 
 import './libraries/Gas.sol';
+import './errors/AuctionErrors.sol';
 
 import './abstract/OffersRoot.sol';
 
@@ -28,6 +29,7 @@ contract AuctionRootTip3 is OffersRoot {
 
     constructor(
         TvmCell codeIndex,
+        TvmCell codeData,
         address _owner,
         TvmCell _offerCode,
         uint128 _deploymentFee,
@@ -42,6 +44,7 @@ contract AuctionRootTip3 is OffersRoot {
         // Method and properties are declared in OffersRoot
         setDefaultProperties(
             codeIndex,
+            codeData,
             _owner,
             _offerCode,
             _deploymentFee,
@@ -55,10 +58,15 @@ contract AuctionRootTip3 is OffersRoot {
 
     function onReceiveNft(
         address data_address,
+        address data_root,
+        uint256 data_id,
         address sender_address,
-        TvmCell payload
+        TvmCell payload,
+        address send_gas_to
     ) external {
         tvm.rawReserve(Gas.AUCTION_ROOT_INITIAL_BALANCE, 0);
+        address expectedSender = resolveData(data_root, data_id);
+        require(msg.sender == expectedSender, AuctionErrors.wrong_data_sender);
         (
             address _paymentTokenRoot,
             address _addrRoot,
@@ -97,11 +105,21 @@ contract AuctionRootTip3 is OffersRoot {
             );
             MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, data_address, offerAddress, _price, _auctionDuration, _hash);    
             emit auctionDeployed(offerAddress, offerInfo);
-            IData(data_address).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(offerAddress);
-            sender_address.transfer({ value: 0, flag: 128, bounce: false });
+            TvmCell empty;
+            IData(data_address).transfer{value: 0, flag: 128}(
+                offerAddress,
+                false,
+                empty,
+                send_gas_to
+            );
         } else {
-            IData(data_address).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(sender_address);
-            sender_address.transfer({ value: 0, flag: 128, bounce: false });
+            TvmCell empty;
+            IData(data_address).transfer{value: 0, flag: 128}(
+                sender_address,
+                false,
+                empty,
+                send_gas_to
+            );
         }
     }
 

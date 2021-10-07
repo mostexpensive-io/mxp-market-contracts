@@ -8,6 +8,7 @@ async function main() {
   const keyPairs = await locklift.keys.getKeyPairs();
 
   const Index = await locklift.factory.getContract('Index');
+  const Data = await locklift.factory.getContract('Data');
   const AuctionTip3 = await locklift.factory.getContract('AuctionTip3');
   let auctionRootTip3;
   if (locklift.network === 'local') {
@@ -15,12 +16,13 @@ async function main() {
       contract: AuctionRootTip3,
       constructorParams: {
         codeIndex: Index.code,
+        codeData: Data.code,
         _owner: account.address,
         _offerCode: AuctionTip3.code,
         _deploymentFee: 0,
         _marketFee: 0,
         _marketFeeDecimals: 0,
-        _auctionBidDelta: 10,
+        _auctionBidDelta: 1 * 10**9,
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],
@@ -30,12 +32,13 @@ async function main() {
       contract: AuctionRootTip3,
       constructorParams: {
         codeIndex: Index.code,
+        codeData: Data.code,
         _owner: account.address,
         _offerCode: AuctionTip3.code,
         _deploymentFee: 0,
         _marketFee: 0,
         _marketFeeDecimals: 0,
-        _auctionBidDelta: 10,
+        _auctionBidDelta: 1 * 10**9,
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],

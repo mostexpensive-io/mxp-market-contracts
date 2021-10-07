@@ -49,10 +49,11 @@ async function deployNftRoot(owner) {
     constructorParams: {
       codeIndex: Index.code,
       codeData: Data.code,
-      internalOwner: owner
+      internalOwner: owner,
+      sendGasTo: owner,
     },
     keyPair: keyPairs[0],
-  });
+  }, locklift.utils.convertCrystal(6, 'nano'));
   return nftRoot;
 }
 
@@ -62,17 +63,22 @@ async function mintNft(account, root) {
     contract: root,
     method: 'mintNft',
     params: {
-      dataUrl: Buffer.from('test purposes').toString('hex')
+      dataUrl: Buffer.from('test purposes').toString('hex'),
+      sendGasTo: account.address
     },
-    keyPair: keyPairs[0]
+    keyPair: keyPairs[0],
+    value: locklift.utils.convertCrystal(3, 'nano'),
   })
 
   const tree = await locklift.ton.client.net.query_transaction_tree({
     in_msg: nftTx.transaction.in_msg,
     abi: await locklift.factory.getContract('Data').abi
   })
+  if (tree.messages.length != 7) {
+    throw new Error('mint error')
+  }
   const data = await locklift.factory.getContract('Data')
-  data.setAddress(tree.messages[2].dst)
+  data.setAddress(tree.messages[6].src)
   return data
 }
 

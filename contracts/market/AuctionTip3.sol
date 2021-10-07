@@ -43,7 +43,8 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     enum AuctionStatus {
         Created,
         Active,    
-        Complete
+        Complete,
+        Cancelled
     }
     AuctionStatus state;
 
@@ -116,35 +117,16 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     ) override external {
         tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         if (
+            msg.value >= Gas.TOKENS_RECEIVED_CALLBACK_VALUE &&
             amount > nextBidValue && // require(msg.value > nextBidValue, AuctionErrors.bid_is_too_low);
             msg.sender == tokenWallet && // значение переменной контракта из п.2
             msg.sender == token_wallet && // параметр из tokensReceiveCallback
             tokenWallet.value != 0 &&
             paymentTokenRoot == token_root && // переменная соответствует параметру переданному в tokensReceiveCallback
+            now < auctionEndTime &&
             state == AuctionStatus.Active
         ) {
-            // require(addrOwner != msg.sender, OffersBaseErrors.buyer_is_my_owner);
-            // TODO: decline transaction or take fee, fire event and send money back?
-            
-            if(now >= auctionEndTime) {
-                emit bidDeclined(sender_address, amount);
-                TvmCell empty;
-                ITONTokenWallet(msg.sender).transferToRecipient{ value: Gas.TRANSFER_TO_RECIPIENT_VALUE, flag: 1 }(
-                    0,
-                    sender_address,
-                    amount,
-                    0,
-                    0,
-                    original_gas_to,
-                    false,
-                    empty
-                );
-                sendBidResultCallback(sender_address, payload, false);
-                finishAuction();
-            } else {
-                // TODO: sender can spend contract's tons by sending very small value
-                processBid(sender_address, amount, payload);
-            }
+            processBid(sender_address, amount, payload);
         } else {
             emit bidDeclined(sender_address, amount);
             sendBidResultCallback(sender_address, payload, false);
@@ -163,75 +145,69 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     }
 
     function processBid(address _newBidSender, uint128 _bid, TvmCell _callbackPayload) private {
-        if (_bid >= nextBidValue) {  // TODO: for what? for why? we checked it already
-            Bid _currentBid = currentBid;
-            Bid newBid = Bid(_newBidSender, _bid);
-            maxBidValue = _bid; // MY: there was msg.value, but for why?
-            currentBid = newBid;
-            calculateAndSetNextBid();
-            emit bidPlaced(_newBidSender, _bid);
-            sendBidResultCallback(_newBidSender, _callbackPayload, true);
-            // Return lowest bid value to the bidder's address
-            if (_currentBid.value > 0) {
-                TvmCell empty;
-                ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
-                    0,
-                    _currentBid.addr,
-                    _currentBid.value,
-                    0,
-                    0,
-                    address.makeAddrStd(0, 0),
-                    false,
-                    empty
-                );
-            }
-        } else {
-            emit bidDeclined(_newBidSender, _bid);
-            sendBidResultCallback(_newBidSender, _callbackPayload, false);
+        Bid _currentBid = currentBid;
+        Bid newBid = Bid(_newBidSender, _bid);
+        maxBidValue = _bid;
+        currentBid = newBid;
+        calculateAndSetNextBid();
+        emit bidPlaced(_newBidSender, _bid);
+        sendBidResultCallback(_newBidSender, _callbackPayload, true);
+        // Return lowest bid value to the bidder's address
+        // TODO Who pays? Now _newBidSender is send_gas_to for transferToRecipient
+        if (_currentBid.value > 0) {
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
                 0,
+                _currentBid.addr,
+                _currentBid.value,
+                0,
+                0,
                 _newBidSender,
-                _bid,
-                0,
-                0,
-                address.makeAddrStd(0, 0),
                 false,
                 empty
             );
         }
     }
 
-    function finishAuction() public {
+    function finishAuction(
+        address send_gas_to
+    ) public {
         require(now >= auctionEndTime, AuctionErrors.auction_still_in_progress);
-        tvm.accept();
-        uint128 feePart = math.divr(deploymentFee, 3);
-
+        require(msg.value >= Gas.FINISH_AUCTION_VALUE, BaseErrors.not_enough_value);
         if (maxBidValue > price) {
-            uint128 decimals = uint128(uint128(10) ** uint128(marketFeeDecimals));
-            uint128 marketFeeValue = math.divc(math.muldiv(maxBidValue, uint128(marketFee), uint128(100)), decimals);
-            IData(addrData).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(currentBid.addr);
             TvmCell empty;
+            IData(addrData).transfer{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(
+                currentBid.addr,
+                false,
+                empty,
+                send_gas_to
+            );
             ITONTokenWallet(tokenWallet).transferToRecipient{ value: 0, flag: 128 }(
                 0,
                 addrOwner,
                 maxBidValue,
                 0,
                 0,
-                address.makeAddrStd(0, 0),
+                send_gas_to,
                 false,
                 empty
             );
             state = AuctionStatus.Complete;
         } else {
-            state = AuctionStatus.Complete;
-            IData(addrData).transferOwnership{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(addrOwner);
+            state = AuctionStatus.Cancelled;
+            TvmCell empty;
+            IData(addrData).transfer{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(
+                addrOwner,
+                false,
+                empty,
+                addrOwner
+            );
         }
     }
 
     //TODO: recalc with decimals
     function calculateAndSetNextBid() private {
-        nextBidValue = maxBidValue + math.muldiv(maxBidValue, uint128(bidDelta), uint128(100));
+        nextBidValue = maxBidValue + math.muldivc(maxBidValue, uint128(bidDelta), uint128(10000));
     }
 
     function onTokenWallet(address value) external {
@@ -270,7 +246,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     ) private {
         if(_callbackTarget.value != 0) {
             uint32 callbackId = 404;
-            if (_payload.toSlice().bits() > 32) {
+            if (_payload.toSlice().bits() >= 32) {
                 callbackId = _payload.toSlice().decode(uint32);
             }
             if (_isBidPlaced) {

@@ -9,11 +9,12 @@ import '../errors/OffersBaseErrors.sol';
 import '../access/InternalOwner.sol';
 import '../interfaces/IOffersRoot.sol';
 import '../../true-nft/contracts/resolvers/IndexResolver.sol';
+import '../../true-nft/contracts/resolvers/DataResolver.sol';
 import '../../true-nft/contracts/interfaces/IData.sol';
 
 
 
-abstract contract OffersRoot is IOffersRoot, IndexResolver, InternalOwner {
+abstract contract OffersRoot is IOffersRoot, IndexResolver, DataResolver, InternalOwner {
     uint8 public marketFee;
     uint8 public marketFeeDecimals;
     uint128 public deploymentFee;
@@ -23,6 +24,7 @@ abstract contract OffersRoot is IOffersRoot, IndexResolver, InternalOwner {
 
     function setDefaultProperties(
         TvmCell codeIndex,
+        TvmCell codeData,
         address _owner,
         TvmCell _offerCode,
         uint128 _deploymentFee,
@@ -33,6 +35,8 @@ abstract contract OffersRoot is IOffersRoot, IndexResolver, InternalOwner {
     {
         // Declared in IndexResolver
         _codeIndex = codeIndex;
+        // Declared in DataResolver
+        _codeData = codeData;
 
         offerCode = _offerCode;
 

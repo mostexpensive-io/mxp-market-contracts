@@ -12,7 +12,7 @@ const options = program.opts();
 
 async function main() {
   const keyPairs = await locklift.keys.getKeyPairs();
-  const account = migration.load(await locklift.factory.getAccount('SafeMultisigWallet', 'scripts/account_build'), 'Account', locklift.network);
+  const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
   if (!options.dataAddress) {
     console.log();
     console.log('Your forgot about dataAddress parameter of your NFT! Pass it as a last parameter of launching this script!');
@@ -27,7 +27,8 @@ async function main() {
 
   // TODO: maybe read from some config? hardcoded for now
   const auctionParams = {
-    _paymentTokenRoot: '0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37', // WTON
+    _paymentTokenRoot: '0:53aa54d465a6680eab3895e61714aa2fdf86250a433b4005191dd0392820fc91',
+    //_paymentTokenRoot: '0:0ee39330eddb680ce731cd6a443c71d9069db06d149a9bec9569d1eb8d04eb37', // WTON
     _addrRoot: nftRoot.address,
     _price: 1,
     _hash: stringToBytesArray((Math.random() + 1).toString(36).substring(2)),
@@ -47,10 +48,12 @@ async function main() {
 
   const tx = await account.runTarget({
     contract: nft,
-    method: 'transferOwnershipAndNotify',
+    method: 'transfer',
     params: {
       addrTo: auctionRootTip3.address,
-      payload: auctionPlacePayload
+      notify: true,
+      payload: auctionPlacePayload,
+      sendGasTo: account.address
     },
     keyPair: keyPairs[0],
     value: locklift.utils.convertCrystal(5.3, 'nano'),

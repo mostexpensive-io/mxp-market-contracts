@@ -83,12 +83,14 @@ describe('success auction e2e', async function() {
     const keyPairs = await locklift.keys.getKeyPairs();
 
     const Index = await locklift.factory.getContract('Index');
+    const Data = await locklift.factory.getContract('Data');
     const AuctionTip3 = await locklift.factory.getContract('AuctionTip3');
 
     auctionRootTip3 = await locklift.giver.deployContract({
       contract: AuctionRootTip3,
       constructorParams: {
         codeIndex: Index.code,
+        codeData: Data.code,
         _owner: account.address,
         _offerCode: AuctionTip3.code,
         _deploymentFee: 0,
@@ -98,7 +100,7 @@ describe('success auction e2e', async function() {
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(1, 'nano'));
+    }, locklift.utils.convertCrystal(5.5, 'nano'));
     expect(auctionRootTip3.address).to.be.a('string')
       .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
   });
@@ -118,10 +120,12 @@ describe('success auction e2e', async function() {
 
     await account.runTarget({
       contract: nft,
-      method: 'transferOwnershipAndNotify',
+      method: 'transfer',
       params: {
         addrTo: auctionRootTip3.address,
-        payload: auctionPlacePayload
+        notify: true,
+        payload: auctionPlacePayload,
+        sendGasTo: account.address
       },
       keyPair: keyPairs[0],
       value: locklift.utils.convertCrystal(5.3, 'nano'),
@@ -189,7 +193,7 @@ describe('success auction e2e', async function() {
         payload: bidPayloadForTest,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(1, 'nano'))
+    }, locklift.utils.convertCrystal(1.4, 'nano'))
     const bidAfter = await auction.call({
       method: 'currentBid',
       params: {}
@@ -233,7 +237,7 @@ describe('success auction e2e', async function() {
         payload: bidPayloadForTest,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(1, 'nano'))
+    }, locklift.utils.convertCrystal(1.4, 'nano'))
     await new Promise((resolve) => { setTimeout(resolve, 7000)})
     //new data
     const firstBidderBalanceAfter = await wallet1.call({
@@ -267,9 +271,14 @@ describe('success auction e2e', async function() {
       await new Promise((resolve)=>{setTimeout(resolve, 1000)})
       nowSeconds = Math.round(Date.now() / 1000);
     }
-    await auction.run({
-      method: 'finishAuction'
-    })
+    await account.runTarget({
+      contract: auction,
+      method: 'finishAuction',
+      params: {
+        send_gas_to: account.address,
+      },
+      keyPair: keyPairs[0],
+    }, locklift.utils.convertCrystal(1.4, 'nano'))
     await new Promise((resolve) => { setTimeout(resolve, 7000)})
     const nftInfo = await nft.call({
       method: 'getInfo'

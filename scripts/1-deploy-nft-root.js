@@ -15,17 +15,19 @@ async function main() {
       constructorParams: {
         codeIndex: Index.code,
         codeData: Data.code,
-        internalOwner: account.address
+        internalOwner: account.address,
+        sendGasTo: account.address
       },
       keyPair: keyPairs[0],
-    });
+    }, locklift.utils.convertCrystal(6, 'nano'));
   } else {
     nftRoot = await deployContract({
       contract: NftRoot,
       constructorParams: {
         codeIndex: Index.code,
         codeData: Data.code,
-        internalOwner: account.address
+        internalOwner: account.address,
+        sendGasTo: account.address
       },
       keyPair: keyPairs[0],
     });
