@@ -12,7 +12,8 @@ async function main() {
     constructorParams: {
       codeIndex: Index.code,
       codeData: Data.code,
-      internalOwner: ZERO_ADDRESS // not necessary
+      internalOwner: ZERO_ADDRESS, // not necessary,
+      sendGasTo:  ZERO_ADDRESS // not necessary
     },
     keyPair: keyPairs[0],
   });
@@ -24,6 +25,7 @@ async function main() {
     contract: AuctionRootTip3,
     constructorParams: {
       codeIndex: Index.code,
+      codeData: Data.code,
       _owner: ZERO_ADDRESS,
       _offerCode: AuctionTip3.code,
       _deploymentFee: 0,

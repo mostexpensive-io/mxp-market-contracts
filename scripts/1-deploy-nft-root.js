@@ -2,7 +2,7 @@ const { Migration, deployContract } = require(process.cwd()+'/scripts/utils');
 const migration = new Migration();
 
 async function main() {
-  const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
+  const account = migration.load(await locklift.factory.getAccount('SafeMultisigWallet', 'scripts/account_build'), 'Account', locklift.network);
   const NftRoot = await locklift.factory.getContract('NftRoot');
   const keyPairs = await locklift.keys.getKeyPairs();
 

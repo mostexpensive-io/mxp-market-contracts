@@ -17,7 +17,7 @@ async function main() {
     console.log('EX: locklift run --config locklift.config.js --network local --script scripts/mint-test-nft.js -dU https://someurl.com/nft-1.json');
     return;
   }
-  const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
+  const account = migration.load(await locklift.factory.getAccount('SafeMultisigWallet', 'scripts/account_build'), 'Account', locklift.network);
   const nftRoot = migration.load(await locklift.factory.getContract('NftRoot'), 'NftRoot', locklift.network);
   const keyPairs = await locklift.keys.getKeyPairs();
 
@@ -28,10 +28,11 @@ async function main() {
     method: 'mintNft',
     params: {
       dataUrl: Buffer.from(options.dataUrl).toString('hex'),
+      notify: false,
       sendGasTo: account.address
     },
     keyPair: keyPairs[0],
-    value: locklift.utils.convertCrystal(3, 'nano'),
+    value: locklift.utils.convertCrystal(4, 'nano'),
   })
 
   const tree = await locklift.ton.client.net.query_transaction_tree({
@@ -43,10 +44,12 @@ async function main() {
     * 2 is internal from account to nft root
     * 3-4 is an event and gas returning
     * 5-6-7 messages according on true nft standard (data and two indexes deploy)
+    * 8 emit Minted event
+    * 9 notify or gas return
   */
-  if (tree.messages.length === 7) {
-    console.log(`Minted NFT: ${tree.messages[6].src}`) // 7 src is data
-    data.setAddress(tree.messages[6].src)
+  if (tree.messages.length === 9) {
+    console.log(`Minted NFT: ${tree.messages[8].src}`) // 8 src is data
+    data.setAddress(tree.messages[8].src)
     console.log('Details:', await data.call({
       method: 'getInfo',
       params: {}

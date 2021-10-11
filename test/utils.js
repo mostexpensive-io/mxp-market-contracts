@@ -64,6 +64,7 @@ async function mintNft(account, root) {
     method: 'mintNft',
     params: {
       dataUrl: Buffer.from('test purposes').toString('hex'),
+      notify: false,
       sendGasTo: account.address
     },
     keyPair: keyPairs[0],
@@ -74,11 +75,11 @@ async function mintNft(account, root) {
     in_msg: nftTx.transaction.in_msg,
     abi: await locklift.factory.getContract('Data').abi
   })
-  if (tree.messages.length != 7) {
+  if (tree.messages.length != 9) {
     throw new Error('mint error')
   }
   const data = await locklift.factory.getContract('Data')
-  data.setAddress(tree.messages[6].src)
+  data.setAddress(tree.messages[8].src)
   return data
 }
 

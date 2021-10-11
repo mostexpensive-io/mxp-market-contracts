@@ -3,7 +3,7 @@ const migration = new Migration();
 
 async function main() {
 
-  const account = migration.load(await locklift.factory.getAccount('Wallet', 'scripts/account_build'), 'Account', locklift.network);
+  const account = migration.load(await locklift.factory.getAccount('SafeMultisigWallet', 'scripts/account_build'), 'Account', locklift.network);
   const AuctionRootTip3 = await locklift.factory.getContract('AuctionRootTip3');
   const keyPairs = await locklift.keys.getKeyPairs();
 
@@ -22,8 +22,8 @@ async function main() {
         _deploymentFee: 0,
         _marketFee: 0,
         _marketFeeDecimals: 0,
-        _auctionBidDelta: 1 * 10**9,
-        _auctionBidDeltaDecimals: 0,
+        _auctionBidDelta: 100, // ???
+        _auctionBidDeltaDecimals: 1, // ???
       },
       keyPair: keyPairs[0],
     });
@@ -38,8 +38,8 @@ async function main() {
         _deploymentFee: 0,
         _marketFee: 0,
         _marketFeeDecimals: 0,
-        _auctionBidDelta: 1 * 10**9,
-        _auctionBidDeltaDecimals: 0,
+        _auctionBidDelta: 100, // ???
+        _auctionBidDeltaDecimals: 1, // ???
       },
       keyPair: keyPairs[0],
     });
