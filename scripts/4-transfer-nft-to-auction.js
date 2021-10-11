@@ -31,6 +31,7 @@ async function main() {
     _addrRoot: nftRoot.address,
     _price: 1 * 10**9,
     _hash: stringToBytesArray((Math.random() + 1).toString(36).substring(2)),
+    _auctionStartTime: Math.round(Date.now() / 1000 - 1), // start date in SECONDS!
     _auctionDuration: 604800 // SECONDS! (604800 is 7 days)
   }
   console.log()

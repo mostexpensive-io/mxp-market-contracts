@@ -114,6 +114,7 @@ describe('success auction e2e', async function() {
         _addrRoot: nftRoot.address,
         _price: 10,
         _hash: stringToBytesArray('hashh'),
+        _auctionStartTime: Math.round(Date.now() / 1000 - 1),
         _auctionDuration: 30 // SECONDS!
       }
     })
@@ -171,8 +172,8 @@ describe('success auction e2e', async function() {
         callbackId: 101
       }
     })
-    const auctionTokenWalletAddress = await auction.call({
-      method: 'tokenWallet',
+    const auctionInfo = await auction.call({
+      method: 'getInfo',
       params: {}
     })
     const bidBefore = await auction.call({
@@ -185,7 +186,7 @@ describe('success auction e2e', async function() {
       contract: wallet1,
       method: 'transfer',
       params: {
-        to: auctionTokenWalletAddress,
+        to: auctionInfo.walletForBids,
         tokens: 50,
         grams: locklift.utils.convertCrystal(1, 'nano'),
         send_gas_to: account.address,
@@ -206,8 +207,8 @@ describe('success auction e2e', async function() {
   it('make another bid from another wallet (returning lower bid)', async function() {
     const keyPairs = await locklift.keys.getKeyPairs();
     // prepare data
-    const auctionTokenWalletAddress = await auction.call({
-      method: 'tokenWallet',
+    const auctionInfo = await auction.call({
+      method: 'getInfo',
       params: {}
     })
     const bidPayloadForTest = await auction.call({
@@ -229,7 +230,7 @@ describe('success auction e2e', async function() {
       contract: wallet2,
       method: 'transfer',
       params: {
-        to: auctionTokenWalletAddress,
+        to: auctionInfo.walletForBids,
         tokens: nextBidValue,
         grams: locklift.utils.convertCrystal(1, 'nano'),
         send_gas_to: account2.address,
@@ -263,9 +264,9 @@ describe('success auction e2e', async function() {
       method: 'currentBid',
       params: {}
     })
-    let auctionEndTime = await auction.call({
-      method: 'auctionEndTime'
-    })
+    let auctionEndTime = (await auction.call({
+      method: 'getInfo'
+    })).finishTime
     let nowSeconds = Math.round(Date.now() / 1000);
     while (auctionEndTime > nowSeconds) {
       await new Promise((resolve)=>{setTimeout(resolve, 1000)})

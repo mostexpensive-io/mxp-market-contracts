@@ -24,8 +24,8 @@ contract AuctionRootTip3 is OffersRoot {
     uint8 public auctionBidDelta;
     uint8 public auctionBidDeltaDecimals;
 
-    event auctionDeployed(address offerAddress, MarketOffer offerInfo);
-    event auctionDeclined(address offerAddress, MarketOffer offerInfo);
+    event AuctionDeployed(address offerAddress, MarketOffer offerInfo);
+    event AuctionDeclined(address senderAddress, address dataAddress);
 
     constructor(
         TvmCell codeIndex,
@@ -72,14 +72,16 @@ contract AuctionRootTip3 is OffersRoot {
             address _addrRoot,
             uint128 _price,
             bytes _hash,
-            uint128 _auctionDuration
-        ) = payload.toSlice().decode(address, address, uint128, bytes, uint128);
+            uint64 _auctionStartTime,
+            uint64 _auctionDuration
+        ) = payload.toSlice().decode(address, address, uint128, bytes, uint64, uint64);
         if (
             _paymentTokenRoot.value > 0 &&
             _addrRoot.value > 0 &&
             _price >= 0 &&
             !_hash.empty() &&
-            _auctionDuration > 0
+            _auctionStartTime > 0 &&
+            _auctionDuration > 0 
         ) {
             address offerAddress = new AuctionTip3 {
                 wid: address(this).wid,
@@ -97,14 +99,15 @@ contract AuctionRootTip3 is OffersRoot {
                 senderAddress, 
                 deploymentFeePart * 2, 
                 marketFee, 
-                marketFeeDecimals, 
+                marketFeeDecimals,
+                _auctionStartTime, 
                 _auctionDuration,
                 auctionBidDelta,
                 _paymentTokenRoot,
                 senderAddress
             );
             MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, dataAddress, offerAddress, _price, _auctionDuration, _hash);    
-            emit auctionDeployed(offerAddress, offerInfo);
+            emit AuctionDeployed(offerAddress, offerInfo);
             TvmCell empty;
             IData(dataAddress).transfer{value: 0, flag: 128}(
                 offerAddress,
@@ -113,6 +116,7 @@ contract AuctionRootTip3 is OffersRoot {
                 sendGasTo
             );
         } else {
+            emit AuctionDeclined(senderAddress, dataAddress);
             TvmCell empty;
             IData(dataAddress).transfer{value: 0, flag: 128}(
                 senderAddress,
@@ -150,10 +154,11 @@ contract AuctionRootTip3 is OffersRoot {
         address _addrRoot,
         uint128 _price,
         bytes _hash,
-        uint128 _auctionDuration
+        uint64 _auctionStartTime,
+        uint64 _auctionDuration
     ) external pure responsible returns(TvmCell) {
         TvmBuilder builder;
-        builder.store(_paymentTokenRoot, _addrRoot, _price, _hash, _auctionDuration);
+        builder.store(_paymentTokenRoot, _addrRoot, _price, _hash, _auctionStartTime, _auctionDuration);
         return builder.toCell();
     }
 }

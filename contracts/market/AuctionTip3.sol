@@ -16,19 +16,22 @@ import './errors/AuctionErrors.sol';
 import './errors/BaseErrors.sol';
 
 contract AuctionTip3 is Offer, ITokensReceivedCallback {
-    address public paymentTokenRoot;
-    address public tokenWallet;
-    uint public auctionDuration;
-    uint public auctionEndTime;
-    uint8 public bidDelta;
+    
+    address paymentTokenRoot;
+    address tokenWallet;
+
+    uint64 auctionStartTime; // it can be suited to 32, but who cares?
+    uint64 auctionDuration;
+    uint64 auctionEndTime;
 
     struct AuctionDetails {
         address auctionSubject;
         address subjectOwner;
         address paymentTokenRoot;
         address walletForBids;
-        uint duration;
-        uint finishTime;
+        uint64 startTime;
+        uint64 duration;
+        uint64 finishTime;
     }
 
     struct Bid {
@@ -36,6 +39,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         uint128 value;
     }
 
+    uint8 public bidDelta;
     Bid public currentBid;
     uint128 public maxBidValue;
     uint128 public nextBidValue;
@@ -59,7 +63,8 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         uint128 _deploymentFee,
         uint128 _marketFee,
         uint8 _marketFeeDecimals,
-        uint128 _auctionDuration, 
+        uint64 _auctionStartTime,
+        uint64 _auctionDuration, 
         uint8 _bidDelta,
         address _paymentTokenRoot,
         address sendGasTo
@@ -75,7 +80,8 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         );
 
         auctionDuration = _auctionDuration;
-        auctionEndTime = now + _auctionDuration;
+        auctionStartTime = _auctionStartTime;
+        auctionEndTime = _auctionStartTime + _auctionDuration;
         maxBidValue = price;
         bidDelta = _bidDelta;
         nextBidValue = price;
@@ -124,6 +130,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             tokenWallet.value != 0 &&
             paymentTokenRoot == token_root && // переменная соответствует параметру переданному в tokensReceiveCallback
             now < auctionEndTime &&
+            now >= auctionStartTime &&
             state == AuctionStatus.Active
         ) {
             processBid(sender_address, amount, payload);
@@ -264,6 +271,6 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     }
 
     function getInfo() external view responsible returns (AuctionDetails) {
-        return AuctionDetails(addrData, addrOwner, paymentTokenRoot, tokenWallet, auctionDuration, auctionEndTime);
+        return AuctionDetails(addrData, addrOwner, paymentTokenRoot, tokenWallet, auctionStartTime, auctionDuration, auctionEndTime);
     }
 }
