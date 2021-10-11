@@ -43,6 +43,7 @@ class Migration {
 
   store(contract, alias, network) {
     const aliasObject = {
+      ...this.migration_log[alias],
       [network] : {
         address: contract.address,
         name: contract.name
