@@ -35,7 +35,7 @@ contract AuctionRootTip3 is OffersRoot {
         uint128 _deploymentFee,
         uint8 _marketFee, 
         uint8 _marketFeeDecimals,
-        uint8 _auctionBidDelta, 
+        uint8 _auctionBidDelta,
         uint8 _auctionBidDeltaDecimals
     ) 
         public 
@@ -57,15 +57,15 @@ contract AuctionRootTip3 is OffersRoot {
     }
 
     function onReceiveNft(
-        address data_address,
-        address data_root,
-        uint256 data_id,
-        address sender_address,
+        address dataAddress,
+        address dataRoot,
+        uint256 dataId,
+        address senderAddress,
         TvmCell payload,
-        address send_gas_to
+        address sendGasTo
     ) external {
         tvm.rawReserve(Gas.AUCTION_ROOT_INITIAL_BALANCE, 0);
-        address expectedSender = resolveData(data_root, data_id);
+        address expectedSender = resolveData(dataRoot, dataId);
         require(msg.sender == expectedSender, AuctionErrors.wrong_data_sender);
         (
             address _paymentTokenRoot,
@@ -88,37 +88,37 @@ contract AuctionRootTip3 is OffersRoot {
                 code: offerCode,
                 varInit: {
                     price: _price,
-                    addrData: data_address,
+                    addrData: dataAddress,
                     deployHash: _hash
                 }
             }(
                 address(this), 
                 _addrRoot, 
-                sender_address, 
+                senderAddress, 
                 deploymentFeePart * 2, 
                 marketFee, 
                 marketFeeDecimals, 
                 _auctionDuration,
                 auctionBidDelta,
                 _paymentTokenRoot,
-                sender_address
+                senderAddress
             );
-            MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, data_address, offerAddress, _price, _auctionDuration, _hash);    
+            MarketOffer offerInfo = MarketOffer(_addrRoot, msg.sender, dataAddress, offerAddress, _price, _auctionDuration, _hash);    
             emit auctionDeployed(offerAddress, offerInfo);
             TvmCell empty;
-            IData(data_address).transfer{value: 0, flag: 128}(
+            IData(dataAddress).transfer{value: 0, flag: 128}(
                 offerAddress,
                 false,
                 empty,
-                send_gas_to
+                sendGasTo
             );
         } else {
             TvmCell empty;
-            IData(data_address).transfer{value: 0, flag: 128}(
-                sender_address,
+            IData(dataAddress).transfer{value: 0, flag: 128}(
+                senderAddress,
                 false,
                 empty,
-                send_gas_to
+                sendGasTo
             );
         }
     }
