@@ -100,7 +100,7 @@ describe('success auction e2e', async function() {
         _auctionBidDeltaDecimals: 0,
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(5.5, 'nano'));
+    }, locklift.utils.convertCrystal(1, 'nano'));
     expect(auctionRootTip3.address).to.be.a('string')
       .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
   });
@@ -118,7 +118,6 @@ describe('success auction e2e', async function() {
         _auctionDuration: 30 // SECONDS!
       }
     })
-
     await account.runTarget({
       contract: nft,
       method: 'transfer',

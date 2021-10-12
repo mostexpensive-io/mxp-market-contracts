@@ -1,11 +1,11 @@
 pragma ton-solidity >= 0.43.0;
 
 library Gas {
-    uint128 constant DEPLOY_AUCTION_VALUE           = 2.1 ton;
+    uint128 constant DEPLOY_AUCTION_VALUE           = 2.5 ton;
     uint128 constant AUCTION_INITIAL_BALANCE        = 1 ton;
     uint128 constant AUCTION_ROOT_INITIAL_BALANCE   = 1 ton;
     uint128 constant TOKENS_RECEIVED_CALLBACK_VALUE = 1 ton;
-    uint128 constant FINISH_AUCTION_VALUE           = 1 ton;
+    uint128 constant FINISH_AUCTION_VALUE           = 1.3 ton;
 
     // tip3
     uint128 constant DEPLOY_EMPTY_WALLET_VALUE      = 0.2 ton;

@@ -69,7 +69,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         address _paymentTokenRoot,
         address sendGasTo
     ) public {
-        tvm.accept();
+        tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         setDefaultProperties(
             _markerRootAddr, 
             _tokenRootAddr, 
@@ -124,7 +124,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         if (
             msg.value >= Gas.TOKENS_RECEIVED_CALLBACK_VALUE &&
-            amount > nextBidValue && // require(msg.value > nextBidValue, AuctionErrors.bid_is_too_low);
+            amount >= nextBidValue && // require(msg.value > nextBidValue, AuctionErrors.bid_is_too_low);
             msg.sender == tokenWallet && // значение переменной контракта из п.2
             msg.sender == token_wallet && // параметр из tokensReceiveCallback
             tokenWallet.value != 0 &&
@@ -133,7 +133,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
             now >= auctionStartTime &&
             state == AuctionStatus.Active
         ) {
-            processBid(sender_address, amount, payload);
+            processBid(sender_address, amount, payload, original_gas_to);
         } else {
             emit BidDeclined(sender_address, amount);
             sendBidResultCallback(sender_address, payload, false);
@@ -151,7 +151,13 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         }
     }
 
-    function processBid(address _newBidSender, uint128 _bid, TvmCell _callbackPayload) private {
+    function processBid(
+        address _newBidSender,
+        uint128 _bid,
+        TvmCell _callbackPayload,
+        address original_gas_to
+    ) private {
+        tvm.rawReserve(Gas.AUCTION_INITIAL_BALANCE, 0);
         Bid _currentBid = currentBid;
         Bid newBid = Bid(_newBidSender, _bid);
         maxBidValue = _bid;
@@ -160,7 +166,6 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         emit BidPlaced(_newBidSender, _bid);
         sendBidResultCallback(_newBidSender, _callbackPayload, true);
         // Return lowest bid value to the bidder's address
-        // TODO Who pays? Now _newBidSender is send_gas_to for transferToRecipient
         if (_currentBid.value > 0) {
             TvmCell empty;
             ITONTokenWallet(msg.sender).transferToRecipient{ value: 0, flag: 128 }(
@@ -169,10 +174,12 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 _currentBid.value,
                 0,
                 0,
-                _newBidSender,
+                original_gas_to,
                 false,
                 empty
             );
+        } else {
+            original_gas_to.transfer({ value: 0, flag: 128 });
         }
     }
 
@@ -181,7 +188,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
     ) public {
         require(now >= auctionEndTime, AuctionErrors.auction_still_in_progress);
         require(msg.value >= Gas.FINISH_AUCTION_VALUE, BaseErrors.not_enough_value);
-        if (maxBidValue > price) {
+        if (maxBidValue >= price) {
             TvmCell empty;
             IData(addrData).transfer{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(
                 currentBid.addr,
@@ -189,7 +196,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
                 empty,
                 send_gas_to
             );
-            ITONTokenWallet(tokenWallet).transferToRecipient{ value: 0, flag: 128 }(
+            ITONTokenWallet(tokenWallet).transferToRecipient{ value: 0, flag: 64 }(
                 0,
                 addrOwner,
                 maxBidValue,
@@ -203,11 +210,11 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         } else {
             state = AuctionStatus.Cancelled;
             TvmCell empty;
-            IData(addrData).transfer{value: Gas.TRANSFER_OWNERSHIP_VALUE, flag: 1}(
+            IData(addrData).transfer{value: 0, flag: 64}(
                 addrOwner,
                 false,
                 empty,
-                addrOwner
+                send_gas_to
             );
         }
     }
