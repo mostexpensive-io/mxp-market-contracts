@@ -46,7 +46,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
 
     enum AuctionStatus {
         Created,
-        Active,    
+        Active,
         Complete,
         Cancelled
     }
