@@ -36,11 +36,13 @@ contract AuctionRootTip3 is OffersRoot {
         uint8 _marketFee, 
         uint8 _marketFeeDecimals,
         uint8 _auctionBidDelta,
-        uint8 _auctionBidDeltaDecimals
+        uint8 _auctionBidDeltaDecimals,
+        address _sendGasTo
     ) 
         public 
     {
         tvm.accept();
+        tvm.rawReserve(Gas.AUCTION_ROOT_INITIAL_BALANCE, 0);
         // Method and properties are declared in OffersRoot
         setDefaultProperties(
             codeIndex,
@@ -54,6 +56,7 @@ contract AuctionRootTip3 is OffersRoot {
 
         auctionBidDelta = _auctionBidDelta;
         auctionBidDeltaDecimals = _auctionBidDeltaDecimals;
+        _sendGasTo.transfer({ value: 0, flag: 128, bounce: false });
     }
 
     function onReceiveNft(

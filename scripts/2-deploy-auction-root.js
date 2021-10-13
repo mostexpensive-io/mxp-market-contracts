@@ -24,9 +24,10 @@ async function main() {
         _marketFeeDecimals: 0,
         _auctionBidDelta: 100, // ???
         _auctionBidDeltaDecimals: 1, // ???
+        _sendGasTo: account.address
       },
       keyPair: keyPairs[0],
-    });
+    }, locklift.utils.convertCrystal(2, 'nano'));
   } else {
     auctionRootTip3 = await deployContract({
       contract: AuctionRootTip3,
@@ -40,6 +41,7 @@ async function main() {
         _marketFeeDecimals: 0,
         _auctionBidDelta: 100, // ???
         _auctionBidDeltaDecimals: 1, // ???
+        _sendGasTo: account.address
       },
       keyPair: keyPairs[0],
     });

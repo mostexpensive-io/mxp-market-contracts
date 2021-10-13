@@ -98,9 +98,10 @@ describe('success auction e2e', async function() {
         _marketFeeDecimals: 0,
         _auctionBidDelta: 10,
         _auctionBidDeltaDecimals: 0,
+        _sendGasTo: ZERO_ADDRESS // deploy is external. let it be zero, it helps to get more clean last balances print
       },
       keyPair: keyPairs[0],
-    }, locklift.utils.convertCrystal(1, 'nano'));
+    }, locklift.utils.convertCrystal(2, 'nano'));
     expect(auctionRootTip3.address).to.be.a('string')
       .and.satisfy(s => s.startsWith('0:'), 'Bad future address');
   });
