@@ -33,6 +33,7 @@ async function main() {
       _marketFeeDecimals: 0,
       _auctionBidDelta: 10,
       _auctionBidDeltaDecimals: 0,
+      _sendGasTo:  ZERO_ADDRESS
     },
     keyPair: keyPairs[0],
   });

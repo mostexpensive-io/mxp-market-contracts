@@ -31,8 +31,8 @@ async function main() {
     _addrRoot: nftRoot.address,
     _price: 1 * 10**9,
     _hash: stringToBytesArray((Math.random() + 1).toString(36).substring(2)),
-    _auctionStartTime: Math.round(Date.now() / 1000 - 1), // start date in SECONDS!
-    _auctionDuration: 604800 // SECONDS! (604800 is 7 days)
+    _auctionStartTime: 1634043600, // start date in SECONDS!
+    _auctionDuration: 64800 // SECONDS! (604800 is 7 days)
   }
   console.log()
   console.log('Auction Params:')
@@ -71,8 +71,8 @@ async function main() {
     }
   })
   console.log(auctionAddress)
-  console.log('Waiting some time...(40s)')
-  await new Promise((resolve) => { setTimeout(resolve, 40000)})
+  console.log('Waiting some time...(60s)')
+  await new Promise((resolve) => { setTimeout(resolve, 60000)})
   auction = await locklift.factory.getContract('AuctionTip3')
   auction.setAddress(auctionAddress)
   const auctionInfo = await auction.call({
