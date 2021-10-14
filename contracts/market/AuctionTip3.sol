@@ -82,7 +82,7 @@ contract AuctionTip3 is Offer, ITokensReceivedCallback {
         auctionDuration = _auctionDuration;
         auctionStartTime = _auctionStartTime;
         auctionEndTime = _auctionStartTime + _auctionDuration;
-        maxBidValue = price;
+        maxBidValue = 0;
         bidDelta = _bidDelta;
         nextBidValue = price;
         paymentTokenRoot = _paymentTokenRoot;
