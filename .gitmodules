@@ -1,3 +1,3 @@
 [submodule "contracts/true-nft"]
 	path = contracts/true-nft
-	url = git@gitlab.wintex.pro:mostexpensive/true-nft.git
+	url = git@github.com:mostexpensive-io/true-nft.git
